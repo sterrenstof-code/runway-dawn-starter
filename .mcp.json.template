@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "shopify": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "shopify-mcp",
+        "--clientId=JOUW_CLIENT_ID",
+        "--clientSecret=JOUW_CLIENT_SECRET",
+        "--domain=jouw-store.myshopify.com"
+      ]
+    }
+  }
+}

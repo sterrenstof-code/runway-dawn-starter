@@ -1,0 +1,17 @@
+# Shopify
+node_modules/
+.cache/
+.tmp/
+
+# Runway credentials — NOOIT committen
+.mcp.json
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
