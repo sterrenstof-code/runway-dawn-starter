@@ -1,0 +1,319 @@
+/*! Beyondesign Development
+-------
+-------
+-------
+-------
+-------
+-------
+---- */
+
+/* general 
+---
+-------
+-------
+-------
+-------
+-------
+--------*/
+
+html {
+  font-size: 62.5%;
+  scroll-behavior: smooth;
+}
+
+:root {
+  --primary-fill-color: ;
+  --secondary-fill-color: ;
+  --body-color: ;
+  --accent-color: ;
+  --font-montserrat: ;
+
+  /* Spacing */
+  --max-width: 144rem;
+  --section-padding-desktop: 8rem;
+  --section-padding-mobile: 4.8rem;
+
+  /* Border radius */
+  --border-radius-sm: 0.4rem;
+  --border-radius-md: 0.8rem;
+  --border-radius-lg: 1.6rem;
+  --border-radius-pill: 10rem;
+
+  /* Transition */
+  --transition-base: 0.2s ease;
+}
+
+@media (min-width: 60em) {
+  :root {
+    --max-width: 117.1rem;
+  }
+}
+
+/* =============================================================================
+   TYPOGRAPHY
+   ============================================================================= */
+
+.h1 {
+
+}
+
+.h2,
+.bd-custom h1,
+.fs-heading-2-large,
+.rte h1,
+.bd-custom .ff-heading {
+
+}
+
+.h3,
+h2,
+.rte h2 {
+
+}
+
+.p-med,
+p,
+.fs-body-large-ns {
+
+}
+
+.p-small,
+.p-small p {
+
+}
+
+.p-small.btn.btn-main {
+
+}
+
+.p-xsmall {
+
+}
+
+/* Heading tag overrides — consistency across all pages
+   ============================================================================= */
+
+h1 {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+}
+
+h2 {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+}
+
+h3 {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+}
+
+p {
+  font-family: var(--font-body-family);
+  font-style: var(--font-body-style);
+  font-weight: var(--font-body-weight);
+  color: var(--color-base-text);
+}
+
+/* =============================================================================
+   BORDER RADIUS — global overrides
+   ============================================================================= */
+
+/* Buttons */
+.button,
+.btn,
+.shopify-payment-button__button,
+input[type="submit"],
+button[type="submit"] {
+  border-radius: var(--border-radius-md);
+}
+
+/* Inputs & form fields */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  border-radius: var(--border-radius-sm);
+}
+
+/* Cards */
+.card__inner,
+.card,
+.card-wrapper {
+  border-radius: var(--border-radius-md);
+}
+
+/* Media / image containers */
+.media,
+.media--square,
+.media--portrait,
+.media--landscape {
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+/* Variant pills */
+.variant-pill {
+  border-radius: var(--border-radius-pill);
+}
+
+/* Badges & tags */
+.badge,
+.price__badge-sale,
+.price__badge-sold-out {
+  border-radius: var(--border-radius-sm);
+}
+
+/* =============================================================================
+   DRAWERS — consistent base styling for all drawers
+   ============================================================================= */
+
+/* Menu drawer */
+#menu-drawer,
+.menu-drawer {
+  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+}
+
+/* Cart drawer */
+#cart-drawer,
+.cart-drawer {
+  border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+}
+
+/* Search drawer / predictive search */
+.predictive-search,
+.search-modal__content {
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+}
+
+/* Drawer overlays */
+.menu-drawer__overlay,
+.cart-drawer__overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* =============================================================================
+   LIGHTBOX — PDP image carousel consistency
+   ============================================================================= */
+
+/* Deferred media / video lightbox */
+.deferred-media,
+.product__media-item .deferred-media {
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+/* Modal / lightbox overlay */
+.media-fullscreen-overlay,
+.media-gallery__modal {
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Modal close button */
+.media-gallery__modal .close-button,
+.media-fullscreen-overlay .close-button {
+  border-radius: var(--border-radius-sm);
+}
+
+/* =============================================================================
+   STICKY HEADER
+   ============================================================================= */
+
+.header.is-sticky {
+
+}
+
+/* =============================================================================
+   BUTTONS
+   ============================================================================= */
+
+.btn.btn-main {
+
+}
+
+.btn.btn-main:hover {
+
+}
+
+/* =============================================================================
+   HELPER CLASSES
+   ============================================================================= */
+
+/* Visibility */
+.hide-mobile {
+  display: none;
+}
+
+.hide-desktop {
+  display: block;
+}
+
+.display {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.hide {
+  display: none;
+  opacity: 0;
+  visibility: hidden !important;
+}
+
+/* Typography helpers */
+.underline-link {
+  text-decoration: underline;
+}
+
+/* Contrast section text overrides — uncomment when needed */
+/* .section--contrast .h2,
+.section--contrast .h1,
+.section--contrast .h3,
+.section--contrast p,
+.section--contrast .p-large,
+.section--contrast .p-med,
+.section--contrast .p-small,
+.section--contrast .p-xsmall,
+.section--contrast .h3 {
+  color: var(--primary-text-color);
+} */
+
+/* =============================================================================
+   SECTIONS — base reset
+   ============================================================================= */
+
+
+
+/* =============================================================================
+   MEDIA QUERIES
+   ============================================================================= */
+
+/* Tablet and landscape */
+@media (min-width: 45em) {
+
+  .hide-mobile {
+    display: block;
+  }
+
+  .hide-desktop {
+    display: none;
+  }
+
+}
+
+/* Desktop */
+@media (min-width: 60em) {
+
+  :root {
+    --max-width: 117.1rem;
+  }
+
+}
