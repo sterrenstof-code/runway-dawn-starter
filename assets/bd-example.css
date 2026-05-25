@@ -1,0 +1,190 @@
+/*
+ * BD Example Section
+ * ==================
+ * Referentie CSS — demonstreert alle BD CSS-patronen.
+ * Kopieer dit bestand als startpunt voor nieuwe secties.
+ *
+ * REGELS:
+ * - Mobile-first
+ * - BEM naamgeving: .bd-example__element--modifier
+ * - Gebruik Dawn CSS-variabelen waar mogelijk
+ * - BD custom tokens via var(--bd-*)
+ * - Nooit architectuurklassen (.bd-h1 etc.) nesten
+ * - Alle stijlen gewikkeld in [BD feat] commentaar
+ */
+
+/* [BD feat] BD-Example layout */
+
+/* ============================================================
+   SECTIE — MOBILE (basis)
+   ============================================================ */
+
+.bd-example {
+  padding-block: var(--bd-section-padding-mobile, 6rem);
+}
+
+.bd-example.bd-padding--standard {
+  padding-block: var(--bd-section-padding-mobile, 6rem);
+}
+
+.bd-example__container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-8, 3.2rem);
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.bd-example__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-3, 1.2rem);
+  text-align: center; /* of left — haal uit Figma */
+}
+
+.bd-example__heading {
+  /* Grootte en font komen via .bd-h2 klasse op het element */
+  margin: 0;
+  color: rgb(var(--color-base-text));
+}
+
+.bd-example__subheading {
+  margin: 0;
+  color: rgb(var(--color-base-text));
+  opacity: 0.7; /* subtiele secondaire tekst */
+}
+
+.bd-example__meta-subtitle {
+  margin: 0;
+  color: rgb(var(--color-base-accent-1));
+}
+
+
+/* ============================================================
+   MEDIA
+   ============================================================ */
+
+.bd-example__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--bd-radius-md, 0.8rem);
+  aspect-ratio: 16 / 9; /* pas aan naar Figma-verhouding */
+}
+
+.bd-example__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* gebruik 'contain' voor product-afbeeldingen */
+  display: block;
+}
+
+
+/* ============================================================
+   ITEMS (blokken)
+   ============================================================ */
+
+.bd-example__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr; /* 1 kolom op mobiel */
+  gap: var(--bd-space-6, 2.4rem);
+}
+
+.bd-example__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2, 0.8rem);
+  padding: var(--bd-space-6, 2.4rem);
+  background-color: rgb(var(--color-base-background-2));
+  border-radius: var(--bd-radius-md, 0.8rem);
+  box-shadow: var(--bd-shadow-card, none);
+}
+
+.bd-example__item-title {
+  margin: 0;
+  color: rgb(var(--color-base-text));
+}
+
+.bd-example__item-text {
+  margin: 0;
+  color: rgb(var(--color-base-text));
+}
+
+.bd-example__item-text p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* ============================================================
+   CTA
+   ============================================================ */
+
+.bd-example__cta {
+  display: flex;
+  justify-content: center; /* of flex-start — haal uit Figma */
+}
+
+.bd-example__cta-link {
+  /* Basisstijlen via .bd-button — voeg hier section-specifieke overrides toe */
+  text-decoration: none;
+}
+
+
+/* ============================================================
+   TABLET — 750px
+   ============================================================ */
+
+@media screen and (min-width: 750px) {
+
+  .bd-example__items {
+    grid-template-columns: repeat(2, 1fr); /* 2 kolommen op tablet */
+  }
+
+  .bd-example__media {
+    aspect-ratio: 16 / 7; /* breder op grotere schermen */
+  }
+
+}
+
+
+/* ============================================================
+   DESKTOP — 990px
+   ============================================================ */
+
+@media screen and (min-width: 990px) {
+
+  .bd-example {
+    padding-block: var(--bd-section-padding-desktop, 10rem);
+  }
+
+  .bd-example.bd-padding--standard {
+    padding-block: var(--bd-section-padding-desktop, 10rem);
+  }
+
+  .bd-example__items {
+    grid-template-columns: repeat(3, 1fr); /* 3 kolommen op desktop */
+  }
+
+  .bd-example__container {
+    gap: var(--bd-space-12, 4.8rem);
+  }
+
+}
+
+
+/* ============================================================
+   WIDE — 1200px
+   ============================================================ */
+
+@media screen and (min-width: 1200px) {
+
+  /* Optionele wide-screen aanpassingen */
+
+}
+
+/* [BD feat] BD-Example layout */

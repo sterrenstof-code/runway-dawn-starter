@@ -1,79 +1,181 @@
-# Runway — Projectleerningen & Best Practices
+# Runway — Learnings & Best Practices
 
-_Versie: 1.0 | Laatste update: maart 2026_
-_Dit bestand groeit automatisch op basis van alle CP3/CP4 rapporten over alle projecten._
-
----
-
-## Hoe dit bestand werkt
-
-Learnings zijn inzichten die breder gaan dan een specifieke fout — werkwijzen, aanpakken en beslissingen die bewezen werken. Ze komen uit post-project analyses en QA-rapporten.
+_Versie: 2.0 | Beyondesign Agency Standards_
+_Voeg nieuwe learnings toe na elk project. Datum + context._
 
 ---
 
-## Aanpak & Werkwijze
+## Workflow
 
-### [L-001] Altijd sectie per sectie — nooit een volledige pagina
-Genereer componenten één voor één. Een volledige PDP in één prompt resulteert in code die moeilijk te debuggen is, schema-fouten bevat, en niet pixel-perfect is. Werk altijd van boven naar onder: hero → info → tabs → gerelateerd.
+### Metafields vóór code — altijd
 
-### [L-002] Figma als enige bron van waarheid
-Vraag altijd de Figma node URL op voor je begint. Screenshots zijn tweede keuze — ze missen exacte spacing, kleuren en font-sizes. Gebruik de Figma MCP tool om design tokens direct te lezen.
-
-### [L-003] Metafields documenteren voor je begint
-Vraag voor aanvang van een PDP of collection page naar het volledige metafield-overzicht. Metafields die pas halverwege ontdekt worden veroorzaken herwerk. De metafield-documentatie zit in de Dev Notes (CP1).
-
-### [L-004] Preview met testdata — altijd
-Een preview zonder ingevulde metafields en testproduct is geen preview. Zorg dat de testpagina alle edge cases dekt: lang productnaam, geen afbeelding, uitverkocht, sale prijs.
+Metafields aanmaken in Shopify Admin vóórdat je de sectie codeert bespaart iteraties.
+De klant kan meteen content invullen terwijl jij de sectie bouwt.
+Volgorde: Figma review → metafield-lijst opstellen → aanmaken via Admin → dan coderen.
 
 ---
 
-## Shopify 2.0 Specifiek
+### Figma Dev Mode is de bron van waarheid
 
-### [L-005] Dawn als basis, niet als template
-Dawn is een startpunt voor de architectuur (CSS variabelen, JS events, schema conventies), niet als visueel startpunt. Overschrijf Dawn's visuele stijl volledig via de CSS variabelen in `settings_data.json`.
-
-### [L-006] Theme Editor compatibiliteit is niet optioneel
-Elke sectie moet volledig aanpasbaar zijn via de Theme Editor. Klant of PM kan anders niet zelfstandig aanpassingen doen. Dit is geen nice-to-have — het is een deliverable requirement.
-
-### [L-007] Gebruik Dawn's JS event systeem
-Dawn heeft een uitgebreid event systeem (`cart:updated`, `variant:change`, `drawer:open`…). Gebruik dit altijd in plaats van eigen event handlers te schrijven. Dit voorkomt conflicten en dubbele logica.
-
-### [L-008] `settings_data.json` voor kleurenschema's
-Kleuren en fonts worden niet in CSS hardcoded — ze worden ingesteld in `config/settings_data.json`. Dit zorgt dat de Theme Editor en de gerenderde kleuren overeenkomen.
+Nooit spacingwaarden, fontgroottes of kleuren schatten of overnemen uit het design panel.
+Open altijd het **rechter paneel in Dev Mode** — die toont exacte px-waarden en hex-codes.
+Converteer px naar rem door te delen door 10 (Dawn gebruikt root font-size 10px).
 
 ---
 
-## Performance
+### Dawn kleurvariabelen zijn RGB-triplets
 
-### [L-009] Lazy loading voor alles buiten de fold
-Alle afbeeldingen die niet in het initiële viewport zitten krijgen `loading: 'lazy'`. Hero-afbeeldingen krijgen `loading: 'eager'` en optioneel `fetchpriority: 'high'`.
-
-### [L-010] Geen externe scripts zonder expliciete goedkeuring
-Externe JS libraries (sliders, animaties, fonts) worden altijd besproken voor implementatie. Elke externe script is een performance risico en potentieel security issue.
-
----
-
-## QA & Oplevering
-
-### [L-011] Pixel-perfect QA doe je in de browser, niet in de code
-Gebruik de Shopify Theme Inspector plugin en een ruler tool om spacing te vergelijken met Figma. Code die er goed uitziet in de editor kan in de browser afwijken.
-
-### [L-012] Test op drie breakpoints: 375px, 768px, 1280px
-Elke opgeleverde sectie wordt getest op deze drie exacte breedtes. Screenshots van deze drie views gaan in het CP3-rapport.
-
-### [L-013] Uitverkochte en variant-loze states altijd testen
-Een product zonder varianten, een uitverkochte variant, en een product met 10+ varianten — alle drie testen voor oplevering.
+`--color-base-text` bevat `"26 26 26"` (geen `#`). Altijd `rgb()` wrapper:
+```css
+color: rgb(var(--color-base-text));
+background-color: rgba(var(--color-base-accent-1), 0.15);
+```
+Dit werkt ook met `rgba()` voor transparantie — iets wat met HEX niet kan zonder extra waarden.
 
 ---
 
-## Communicatie & Proces
+### Bouwvolgorde bespaart refactors
 
-### [L-014] Onduidelijkheden melden, niet oplossen
-Als een Figma component onduidelijk is (ontbrekende mobile state, onduidelijke interactie, ontbrekende data), meld dit direct aan de PM. Niet zelf interpreteren — interpretaties kosten meer tijd in QA dan de oorspronkelijke vraag.
-
-### [L-015] PR per pagina, niet per project
-Elke pagina krijgt een eigen branch en PR. Dit maakt QA gerichtter en maakt rollbacks makkelijker. Nooit alle pagina's in één enkele PR.
+PDP → Home → Header → Collection → Content.
+De PDP bevat de meeste complexe component-interacties. Door daar te starten
+komen patronen (prijs, varianten, gallery) beschikbaar voor hergebruik op andere pagina's.
 
 ---
 
-_Dit bestand wordt aangevuld na elk afgerond project. Learnings die 3+ keer voorkomen worden gepromoveerd naar `patterns.md`._
+### `[BD feat]` commentaar versnelt overdracht
+
+Elke BD wijziging omhullen met `/* [BD feat] Naam */` zorgt dat toekomstige developers
+(of Claude) snel het verschil zien tussen Dawn-code en BD-aanpassingen.
+Zoek op `[BD feat]` om alle aanpassingen in één keer te vinden.
+
+---
+
+## CSS
+
+### Mobile-first voorkomt `!important`
+
+Begin altijd met de mobile styles, voeg media queries toe voor grotere schermen.
+Desktop overrides zijn zo altijd additief — nooit conflicterend.
+
+---
+
+### `aspect-ratio` + `object-fit: cover` voor stabiele afbeeldingscontainers
+
+```css
+.bd-card__image-wrapper {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+.bd-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+```
+Dit voorkomt layout shift bij langzaam ladende afbeeldingen en werkt op alle viewports.
+Gebruik `contain` voor productafbeeldingen op witte achtergrond.
+
+---
+
+### BEM geeft structuur — hou het vlak
+
+Maximaal twee niveaus diep: `.bd-sectie__element`. Vermijd `.bd-sectie__element__sub-element`.
+Gebruik een modifier (`.bd-sectie__element--variant`) voor visuele variaties.
+
+---
+
+## Liquid
+
+### Whitespace control is verplicht
+
+`{%- -%}` tags verwijderen overbodige witruimte uit de HTML output.
+Gebruik ze consequent — het maakt de gegenereerde HTML leesbaar en voorkomt spacing-bugs.
+
+---
+
+### `section.id` in ID-attributen voor herbruikbaarheid
+
+```liquid
+id="bd-hero-{{ section.id }}"
+```
+Zo kan dezelfde sectie meerdere keren op één pagina staan zonder ID-conflict.
+
+---
+
+### `selected_or_first_available_variant` is altijd correct
+
+Gebruik dit altijd op PDPs. Het respecteert URL-parameters (`?variant=123`) én
+valt terug op de eerste beschikbare variant als geen URL-parameter aanwezig is.
+
+---
+
+## JavaScript
+
+### IIFE + guard = veilig op elke pagina
+
+De IIFE isoleert scope. De guard (`if (!section) return`) voorkomt fouten op pagina's
+waar de sectie niet bestaat. Beide zijn verplicht — nooit weglaten.
+
+---
+
+### `data-bd-*` attributen als JS hooks
+
+Koppel JS nooit aan CSS-klassen. Als de klasse ooit hernoemt wordt, breekt de JS.
+`data-bd-trigger`, `data-bd-target` etc. zijn stabiel en communiceren duidelijk het doel.
+
+---
+
+### Theme editor support is geen optioneel extra
+
+Shopify's customizer laadt secties opnieuw bij elke instellingswijziging.
+Zonder `shopify:section:load` handler werkt de JS niet live in de customizer.
+Dit ontdek je anders pas als de klant klaagt — bouw het altijd in.
+
+---
+
+## Afbeeldingen
+
+### LCP afbeelding altijd eager
+
+De eerste grote afbeelding above the fold (`eager` + `fetchpriority: 'high'`) bepaalt
+de LCP-score. Vergeet dit niet bij hero-secties en featured product banners.
+
+### `widths` + `sizes` zijn verplicht voor goede Core Web Vitals
+
+```liquid
+widths: '375, 750, 990, 1200, 1500',
+sizes: '(min-width: 990px) 50vw, 100vw'
+```
+Shopify genereert dan automatisch een `srcset` — de browser kiest het juiste formaat.
+
+---
+
+## Shopify Admin
+
+### Dev theme naam is heilig
+
+`[BD/ Dev- DO NOT PUBLISH ]` — nooit een andere naam, nooit publishen.
+De brackets en slash zorgen dat het als BD-intern theme herkenbaar is in de theme-lijst.
+
+### Shopify CLI `theme dev` vóór `theme push`
+
+Controleer altijd lokaal met `shopify theme dev` voordat je naar het dev theme pusht.
+`theme dev` laadt bestanden real-time — je ziet CSS-wijzigingen direct zonder push.
+
+---
+
+## MCP Tools
+
+### Shopify Dev MCP geeft live documentatie
+
+`@shopify/dev-mcp` geeft Claude Code toegang tot actuele Shopify Liquid docs.
+Gebruik het via `mcp__shopify-dev__*` tools voor het opzoeken van Liquid objects,
+filters en schema-opties tijdens codegeneratie.
+
+### shopify-mcp voor Admin API operaties
+
+Metafield-definities, metaobjecten en publicatiestatus zijn bereikbaar via GraphQL
+door het community pakket `shopify-mcp`. Gebruik dit voor Phase 1 (metafields aanmaken)
+en Phase 7 (deployment verificatie).
+
+---

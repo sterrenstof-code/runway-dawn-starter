@@ -1,0 +1,56 @@
+/*
+ * BD Design Tokens
+ * ================
+ * Project-specifieke design tokens, gegenereerd vanuit Figma variabelen.
+ * Wordt automatisch ingevuld door de Figma → Shopify pipeline.
+ *
+ * Dit bestand bevat tokens die NIET bestaan in Dawn's standaard variabelen.
+ * Dawn-variabelen worden overschreven in config/settings_data.json — niet hier.
+ *
+ * Importvolgorde in theme.liquid:
+ *   1. Dawn's base.css (Dawn variabelen)
+ *   2. bd-theme-architecture.css (globale BD stijlen)
+ *   3. bd-design-tokens.css (dit bestand — project-specifiek)
+ *
+ * GEGENEREERD DOOR: Figma → Shopify Pipeline
+ * FIGMA BESTAND: [vul in]
+ * DATUM: [vul in]
+ */
+
+:root {
+
+  /* ------------------------------------------------------------------
+     PROJECT-SPECIFIEKE KLEUREN
+     Kleuren die niet in Dawn's standaard color scheme passen.
+     Naam: --bd-color-custom-[semantische-naam]
+     ------------------------------------------------------------------ */
+
+  /* Voorbeeld:
+  --bd-color-custom-promo-badge: #E63946;
+  --bd-color-custom-trust-icon: #2D6A4F;
+  */
+
+
+  /* ------------------------------------------------------------------
+     PROJECT-SPECIFIEKE SPACING
+     Spacing die afwijkt van de standaard scale in architecture.css
+     ------------------------------------------------------------------ */
+
+  /* Voorbeeld:
+  --bd-space-custom-hero-padding: 9.6rem;
+  --bd-space-custom-card-gap: 2.8rem;
+  */
+
+
+  /* ------------------------------------------------------------------
+     CUSTOM COMPONENT TOKENS
+     Tokens die specifiek zijn voor één component.
+     ------------------------------------------------------------------ */
+
+  /* Voorbeeld:
+  --bd-announcement-bar-height: 4rem;
+  --bd-header-height-mobile: 6rem;
+  --bd-header-height-desktop: 8rem;
+  */
+
+}

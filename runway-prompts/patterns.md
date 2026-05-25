@@ -1,14 +1,56 @@
 # Runway — Bewezen Patronen per Component
 
-_Versie: 1.0 | Laatste update: maart 2026_
+_Versie: 2.0 | Beyondesign Agency Standards_
 _Dit bestand wordt automatisch geüpdatet door de Runway Prompt Engine op basis van projectdata._
+
+---
+
+## BD Bestandsnamen & Prefixes
+
+Alle custom BD bestanden gebruiken het `bd-` prefix:
+
+```
+sections/bd-hero.liquid
+assets/bd-hero.css
+assets/bd-hero.js
+snippets/bd-product-card.liquid
+assets/bd-theme-architecture.css   ← globale stijlen
+assets/bd-design-tokens.css        ← project-specifieke tokens
+```
+
+Dawn's native bestanden worden **niet** hernoemd.
+
+---
+
+## BD Code Commentaar — verplicht
+
+Elke BD wijziging is ingepakt met commentaar:
+
+```css
+/* [BD feat] Hero Layout */
+.bd-hero { ... }
+/* [BD feat] Hero Layout */
+```
+
+```javascript
+// [BD feat] Cart Drawer Counter
+(function() { ... })();
+// [BD feat] Cart Drawer Counter
+```
+
+Zo is elke BD wijziging terug te vinden door `[BD feat]` te zoeken.
 
 ---
 
 ## Dawn CSS Variabelen — altijd gebruiken
 
 ```css
-/* Kleuren */
+/* Kleuren (RGB triplets — gebruik altijd rgb() wrapper) */
+color: rgb(var(--color-base-text));
+background-color: rgb(var(--color-base-background-1));
+background-color: rgba(var(--color-base-accent-1), 0.1); /* met alpha */
+
+/* Volledige lijst */
 var(--color-base-text)
 var(--color-base-background-1)
 var(--color-base-background-2)
@@ -25,24 +67,61 @@ var(--font-body-family)
 var(--font-body-style)
 var(--font-body-weight)
 
-/* Spacing */
-var(--page-width)          /* max-width container */
+/* Layout & spacing */
+var(--page-width)
 var(--spacing-sections-desktop)
 var(--spacing-sections-mobile)
 var(--grid-desktop-horizontal-spacing)
 var(--grid-mobile-horizontal-spacing)
 ```
 
+BD custom tokens (uit `bd-design-tokens.css`):
+```css
+var(--bd-color-primary)
+var(--bd-font-heading)
+var(--bd-text-h1)  /* etc. */
+var(--bd-space-md)
+var(--bd-section-padding-mobile)    /* standaard: 6rem */
+var(--bd-section-padding-desktop)   /* standaard: 10rem */
+```
+
 ---
 
-## Schema Patroon — Standaard Sectie
+## Schema Patroon — Standaard BD Sectie
 
 ```liquid
+{% comment %}
+  Section: bd-[naam]
+  Metafields: [lijst van bd.key namen]
+{% endcomment %}
+
+{%- liquid
+  assign heading = section.settings.heading
+-%}
+
+<section
+  id="bd-[naam]-{{ section.id }}"
+  class="bd-[naam] {{ section.settings.padding_style }} color-{{ section.settings.color_scheme }} gradient"
+  aria-labelledby="bd-[naam]-heading-{{ section.id }}"
+>
+  <div class="bd-[naam]__container page-width">
+    {%- unless heading == blank -%}
+      <h2 id="bd-[naam]-heading-{{ section.id }}" class="bd-[naam]__heading {{ section.settings.heading_size }}">
+        {{- heading | escape -}}
+      </h2>
+    {%- endunless -%}
+  </div>
+</section>
+
+{{ 'bd-[naam].css' | asset_url | stylesheet_tag }}
+<script src="{{ 'bd-[naam].js' | asset_url }}" defer="defer"></script>
+
 {% schema %}
 {
-  "name": "Sectienaam",
+  "name": "BD — Sectienaam",
   "tag": "section",
-  "class": "section",
+  "class": "bd-[naam]",
+  "disabled_on": { "groups": ["header", "footer"] },
   "settings": [
     {
       "type": "text",
@@ -52,64 +131,171 @@ var(--grid-mobile-horizontal-spacing)
     },
     {
       "type": "select",
-      "id": "color_scheme",
+      "id": "heading_size",
+      "label": "Titel grootte",
       "options": [
-        { "value": "accent-1", "label": "Accent 1" },
-        { "value": "accent-2", "label": "Accent 2" },
-        { "value": "background-1", "label": "Background 1" },
-        { "value": "background-2", "label": "Background 2" },
-        { "value": "inverse", "label": "Inverse" }
+        { "value": "bd-h2", "label": "H2 (standaard)" },
+        { "value": "bd-h1", "label": "H1 (groot)" },
+        { "value": "bd-h3", "label": "H3 (klein)" }
       ],
-      "default": "background-1",
-      "label": "Kleurenschema"
+      "default": "bd-h2"
     },
     {
-      "type": "range",
-      "id": "padding_top",
-      "min": 0, "max": 100, "step": 4, "unit": "px",
-      "label": "Padding boven",
-      "default": 36
+      "type": "select",
+      "id": "padding_style",
+      "label": "Sectie padding",
+      "options": [
+        { "value": "bd-padding", "label": "Custom (uit design)" },
+        { "value": "bd-padding--standard", "label": "Standaard (6rem / 10rem)" }
+      ],
+      "default": "bd-padding"
     },
     {
-      "type": "range",
-      "id": "padding_bottom",
-      "min": 0, "max": 100, "step": 4, "unit": "px",
-      "label": "Padding onder",
-      "default": 36
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Kleurenschema",
+      "default": "scheme-1"
     }
   ],
   "blocks": [],
-  "presets": [
-    {
-      "name": "Sectienaam"
-    }
-  ]
+  "presets": [{ "name": "BD — Sectienaam" }]
 }
 {% endschema %}
 ```
 
 ---
 
-## Metafields — Correcte Implementatie
+## CSS Patroon — Mobile First
+
+```css
+/* [BD feat] BD-Naam layout */
+
+/* Mobile (basis) */
+.bd-[naam] {
+  padding-block: var(--bd-section-padding-mobile);
+}
+
+.bd-[naam].bd-padding--standard {
+  padding-block: var(--bd-section-padding-mobile);
+}
+
+/* Tablet — 750px */
+@media screen and (min-width: 750px) {
+  .bd-[naam] { ... }
+}
+
+/* Desktop — 990px */
+@media screen and (min-width: 990px) {
+  .bd-[naam] {
+    padding-block: var(--bd-section-padding-desktop);
+  }
+  .bd-[naam].bd-padding--standard {
+    padding-block: var(--bd-section-padding-desktop);
+  }
+}
+
+/* Wide — 1200px */
+@media screen and (min-width: 1200px) {
+  .bd-[naam] { ... }
+}
+
+/* [BD feat] BD-Naam layout */
+```
+
+BEM naamgeving:
+```css
+.bd-hero { }              /* block */
+.bd-hero__title { }       /* element */
+.bd-hero__title--sale { } /* modifier */
+```
+
+Nooit architectuur-klassen nesten:
+```css
+/* ❌ Fout */
+.bd-hero__title .bd-h1 { margin: 0; }
+
+/* ✅ Correct */
+.bd-hero__title { margin: 0; }
+```
+
+---
+
+## JS Patroon — altijd IIFE
+
+**Nooit** een `<script>` block in het Liquid bestand. Altijd een extern bestand.
+
+```javascript
+// [BD feat] Sectienaam interactie
+(function() {
+  'use strict';
+
+  // Guard: alleen uitvoeren als element bestaat
+  const section = document.querySelector('.bd-[naam]');
+  if (!section) return;
+
+  // Cacheer DOM referenties
+  const trigger = section.querySelector('[data-bd-trigger]');
+  const target  = section.querySelector('[data-bd-target]');
+
+  if (!trigger || !target) return;
+
+  // Events
+  trigger.addEventListener('click', function(e) {
+    e.preventDefault();
+    // logica
+  });
+
+  // Theme editor support
+  document.addEventListener('shopify:section:load', function(event) {
+    if (!event.target.querySelector('.bd-[naam]')) return;
+    // herinitialiseer indien nodig
+  });
+
+})();
+// [BD feat] Sectienaam interactie
+```
+
+Laden in Liquid (onderaan sectie, voor `{% schema %}`):
+```liquid
+<script src="{{ 'bd-[naam].js' | asset_url }}" defer="defer"></script>
+```
+
+---
+
+## Metafields — BD Naamgeving & Implementatie
+
+**Namespace altijd: `bd`**
+**Naamgeving: `[BD] Functie Sectienaam` → key: `functie_sectienaam`**
 
 ```liquid
-{%- comment -%} ALTIJD met default fallback {%- endcomment -%}
-{{ product.metafields.custom.field_name | default: '' }}
+{%- comment -%} Altijd met blank check {%- endcomment -%}
+{%- assign subtitle = product.metafields.bd.subtitle_featured_product.value -%}
+{%- unless subtitle == blank -%}
+  <p class="bd-featured-product__subtitle">{{ subtitle | escape }}</p>
+{%- endunless -%}
+```
 
-{%- comment -%} Controleer bestaan voor conditionele rendering {%- endcomment -%}
-{% if product.metafields.custom.field_name != blank %}
-  <div class="component__meta">
-    {{ product.metafields.custom.field_name }}
-  </div>
-{% endif %}
+Afbeelding metafield:
+```liquid
+{%- assign media = product.metafields.bd.secondary_image_pdp.value -%}
+{%- if media != blank -%}
+  {{- media | image_url: width: 1200 | image_tag:
+      loading: 'lazy',
+      width: media.width,
+      height: media.height,
+      alt: media.alt | escape
+  -}}
+{%- endif -%}
+```
 
-{%- comment -%} Metafield lijst (json type) {%- endcomment -%}
-{% assign meta_list = product.metafields.custom.list_field.value %}
-{% if meta_list != blank %}
-  {% for item in meta_list %}
-    <li>{{ item }}</li>
-  {% endfor %}
-{% endif %}
+Metaobject lijst:
+```liquid
+{%- assign entries = product.metafields.bd.testimonials_pdp.value -%}
+{%- if entries != blank -%}
+  {%- for entry in entries -%}
+    <p>{{ entry.fields.bd_quote.value | escape }}</p>
+  {%- endfor -%}
+{%- endif -%}
 ```
 
 ---
@@ -117,24 +303,50 @@ var(--grid-mobile-horizontal-spacing)
 ## Afbeeldingen — Correct Patroon
 
 ```liquid
-{%- comment -%} ALTIJD widths meegeven voor performance {%- endcomment -%}
-{{
-  image
-  | image_url: width: 1500
-  | image_tag:
+{%- comment -%} LCP (above fold): eager + high priority {%- endcomment -%}
+{{- image | image_url: width: 1500 | image_tag:
+    loading: 'eager',
+    fetchpriority: 'high',
+    widths: '375, 750, 990, 1200, 1500',
+    sizes: '(min-width: 990px) 50vw, 100vw',
+    width: image.width,
+    height: image.height,
+    alt: image.alt | escape,
+    class: 'bd-hero__image'
+-}}
+
+{%- comment -%} Alle andere afbeeldingen: lazy {%- endcomment -%}
+{{- image | image_url: width: 1200 | image_tag:
     loading: 'lazy',
-    widths: '375, 550, 750, 1100, 1500',
-    sizes: '(min-width: 1280px) 700px, (min-width: 768px) 50vw, 100vw',
-    class: 'component__image',
-    alt: image.alt | escape
-}}
+    widths: '375, 750, 990, 1200',
+    sizes: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw',
+    width: image.width,
+    height: image.height,
+    alt: image.alt | escape,
+    class: 'bd-card__image'
+-}}
 
 {%- comment -%} Placeholder als geen afbeelding {%- endcomment -%}
-{% if image != blank %}
-  {{ image | image_url: width: 1500 | image_tag: ... }}
-{% else %}
-  {{ 'product-1' | placeholder_svg_tag: 'component__image component__image--placeholder' }}
-{% endif %}
+{%- if image != blank -%}
+  {{- image | image_url: width: 1200 | image_tag: ... -}}
+{%- else -%}
+  {{ 'product-1' | placeholder_svg_tag: 'bd-card__image bd-card__image--placeholder' }}
+{%- endif -%}
+```
+
+CSS voor afbeeldingscontainers (houdt verhoudingen bij elk formaat):
+```css
+.bd-card__image-wrapper {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4; /* of 1/1, 16/9, etc. */
+}
+.bd-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* cover voor decoratief, contain voor producten */
+  display: block;
+}
 ```
 
 ---
@@ -142,87 +354,94 @@ var(--grid-mobile-horizontal-spacing)
 ## PDP — Product Detail Page
 
 ### Structuur
-1. Product hero (afbeeldingen links, info rechts)
-2. Product beschrijving / tabs
+1. Product hero (afbeeldingen + variant/prijs/ATC)
+2. Productbeschrijving / tabs
 3. Metafield secties (ingrediënten, gebruik, specs)
-4. Related products
+4. Gerelateerde producten
 
 ### Kritische punten
-- `product.selected_or_first_available_variant` voor correcte variant selectie
-- Variant selectors via `product.variants` loop — nooit hardcoded
-- Prijs altijd via `product.selected_or_first_available_variant.price | money`
-- Quantity selector met min=1, geen negatieve waarden
-- Add-to-cart form met `action: routes.cart_add_url`
+- `product.selected_or_first_available_variant` voor correcte variantselectie
+- Prijs altijd via `selected_or_first_available_variant.price | money`
+- Add-to-cart form met verplichte structuur:
 
 ```liquid
-{%- form 'product', product, id: 'product-form', novalidate: 'novalidate' -%}
+{%- form 'product', product, id: 'product-form-{{ section.id }}', novalidate: 'novalidate' -%}
   <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-  <input type="hidden" name="quantity" value="1">
-  <button type="submit" name="add">
+  <button type="submit" name="add" class="bd-button bd-button--primary">
     {{ 'products.product.add_to_cart' | t }}
   </button>
 {%- endform -%}
+```
+
+### Sale prijs patroon
+```liquid
+{%- assign variant = product.selected_or_first_available_variant -%}
+{%- if variant.compare_at_price > variant.price -%}
+  <s class="bd-price__compare">{{ variant.compare_at_price | money }}</s>
+{%- endif -%}
+<span class="bd-price__current">{{ variant.price | money }}</span>
 ```
 
 ---
 
 ## Collection Page
 
-### Structuur
-1. Collection hero / banner
-2. Filter & sort bar
-3. Product grid
-4. Pagination
-
-### Kritische punten
-- Gebruik `collection.products` met `paginate`
-- Filter via `predictive_search` of native Shopify filters
-- Altijd `paginate` block afsluiten
-
 ```liquid
 {% paginate collection.products by 24 %}
-  {% for product in collection.products %}
-    ...
-  {% endfor %}
+  {%- if collection.products.size == 0 -%}
+    <p>{{ 'collections.general.no_matches' | t }}</p>
+  {%- else -%}
+    {%- for product in collection.products -%}
+      {%- render 'bd-product-card', product: product -%}
+    {%- endfor -%}
+  {%- endif -%}
   {{ paginate | default_pagination }}
 {% endpaginate %}
 ```
 
 ---
 
-## Cart / Cart Drawer
+## Cart Drawer
 
-### Kritische punten
-- Cart drawer via `sections/cart-drawer.liquid` — niet in template
-- `cart.item_count` voor badge
-- Altijd `routes.cart_url` gebruiken — nooit hardcoded `/cart`
-- Subtotaal: `cart.total_price | money`
-- Line items via `cart.items` loop
+- Gebruik `sections/cart-drawer.liquid` (Dawn's bestaande sectie)
+- Cart item images: altijd `object-fit: contain`
+- Items container: geen vaste hoogte — scrollbaar
+- Checkout bar: altijd sticky onderaan
+
+```css
+/* [BD feat] Cart drawer layout */
+.bd-cart-drawer__items {
+  flex: 1;
+  overflow-y: auto; /* scroll, geen fixed height */
+}
+.bd-cart-drawer__footer {
+  position: sticky;
+  bottom: 0;
+  background: rgb(var(--color-base-background-1));
+}
+.bd-cart-drawer__item-image {
+  object-fit: contain; /* altijd contain voor cart items */
+}
+/* [BD feat] Cart drawer layout */
+```
 
 ---
 
 ## Homepage Secties
 
-### Patroon voor hero sectie
-- Achtergrond via schema `image_picker` of `video_url`
-- Overlay opacity als schema `range` setting
-- CTA via schema `url` type
-- Mobile image apart als optionele schema setting
+Hero patroon met mobile image:
+```liquid
+{%- assign hero_image = section.settings.mobile_image -%}
+{%- if hero_image == blank -%}
+  {%- assign hero_image = section.settings.image -%}
+{%- endif -%}
+```
 
 ---
 
-## Content Pages
+## Header
 
-### Patroon
-- Gebruik `page.content` voor WYSIWYG content
-- Aanvullende secties via sectie-templates
-- Breadcrumb via snippet
-
----
-
-## Drawers (niet-cart)
-
-### Patroon
-- Initieer via `details` / `summary` HTML patroon (native, geen JS nodig)
-- Of via custom event: `document.dispatchEvent(new CustomEvent('drawer:open', { detail: { id: 'drawer-id' } }))`
-- Dawn heeft ingebouwd `<details>` styling — gebruik dat als basis
+- Gedeeld door alle pagina's — test op elke paginatype
+- Sticky header: zorg dat tekst altijd leesbaar is, ook op hero-secties
+- Z-index problemen voorkomen: header krijgt expliciete z-index
+- Controleer of de header er anders uitziet op bepaalde pagina's (bijv. transparant op hero)

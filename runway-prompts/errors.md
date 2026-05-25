@@ -1,179 +1,251 @@
-# Runway — Gekende Fouten & Oplossingen
+# Runway — Bekende Fouten & Oplossingen
 
-_Versie: 1.0 | Laatste update: maart 2026_
-_Dit bestand wordt automatisch aangevuld door de Runway Prompt Engine op basis van CP3/CP4 rapporten._
-
----
-
-## Hoe dit bestand werkt
-
-Elke fout volgt dit formaat:
-
-```
-### [FOUT-ID] Korte beschrijving
-- Component: PDP / Collection / Cart / Homepage / Content / Drawer / Algemeen
-- Ontdekt in: Project naam of "meerdere projecten"
-- Symptoom: wat de developer/QA ziet
-- Oorzaak: waarom het fout gaat
-- Oplossing: exacte fix
-- Patroon om te vermijden
-```
+_Versie: 2.0 | Beyondesign Agency Standards_
+_Voeg nieuwe fouten toe zodra ze opduiken. Datum + beschrijving._
 
 ---
 
-## Algemeen
+## CSS
 
-### [ERR-001] Schema ontbreekt of is incompleet
-- **Component:** Algemeen
-- **Symptoom:** Sectie niet aanpasbaar in Theme Editor, velden ontbreken
-- **Oorzaak:** `{% schema %}` block vergeten of `presets` array ontbreekt
-- **Oplossing:** Elk Liquid bestand heeft verplicht een volledig schema block. Zonder `presets` is de sectie niet via "Add section" toe te voegen.
-- **Vermijd:** Schema na de `{% endschema %}` tag plaatsen of schema splitsen over meerdere bestanden
+### ❌ Dawn kleurvariabelen zonder `rgb()` wrapper
 
-### [ERR-002] Hardcoded tekst in Liquid
-- **Component:** Algemeen
-- **Symptoom:** Tekst niet aanpasbaar in Theme Editor, vertalingen werken niet
-- **Oorzaak:** Tekst direct in Liquid geschreven zonder schema setting
-- **Oplossing:** Altijd via `{{ section.settings.heading }}` of `{{ 'key' | t }}`
-- **Vermijd:** `<h2>Onze producten</h2>` — gebruik `<h2>{{ section.settings.heading }}</h2>`
+**Fout:**
+```css
+color: var(--color-base-text); /* geeft rauwe "R G B" triplet */
+```
 
-### [ERR-003] Afbeelding zonder widths parameter
-- **Component:** Algemeen
-- **Symptoom:** Trage laadtijd, grote afbeeldingen op mobiel
-- **Oorzaak:** `image_tag` zonder `widths` parameter
-- **Oplossing:** Altijd `widths: '375, 550, 750, 1100, 1500'` meegeven
-- **Vermijd:** `{{ image | image_url: width: 2000 | image_tag }}`
+**Correct:**
+```css
+color: rgb(var(--color-base-text));
+background-color: rgba(var(--color-base-accent-1), 0.1); /* met alpha */
+```
 
-### [ERR-004] CSS variabelen niet gebruikt
-- **Component:** Algemeen
-- **Symptoom:** Kleuren en fonts wijken af van Theme Editor instellingen
-- **Oorzaak:** Hardcoded hex-waarden of font-families in CSS
-- **Oplossing:** Gebruik altijd `var(--color-base-text)` etc. (zie patterns.md)
-- **Vermijd:** `color: #1a1a1a;` — gebruik `color: var(--color-base-text);`
+**Waarom:** Dawn slaat kleuren op als RGB-triplets (`"26 26 26"`), niet als HEX. Altijd `rgb()` wrapper gebruiken.
 
 ---
 
-## PDP — Product Detail Page
+### ❌ Architectuurklassen nesten in component CSS
 
-### [ERR-010] Variant selector werkt niet na page load
-- **Component:** PDP
-- **Symptoom:** Prijs en afbeelding updaten niet bij variant wissel
-- **Oorzaak:** Variant change event niet correct geïmplementeerd
-- **Oplossing:** Gebruik Dawn's ingebouwde `variant:change` custom event
-```javascript
-document.addEventListener('variant:change', (event) => {
-  const variant = event.detail.variant;
-  // update prijs, afbeelding, etc.
-});
+**Fout:**
+```css
+.bd-hero__title .bd-h1 { margin: 0; } /* overschrijft architectuur */
 ```
 
-### [ERR-011] Add-to-cart werkt niet
-- **Component:** PDP
-- **Symptoom:** Klikken op knop doet niets of geeft 422 error
-- **Oorzaak:** Form mist `id` attribuut of `name="id"` input
-- **Oplossing:** Verplichte form structuur altijd gebruiken (zie patterns.md PDP sectie)
+**Correct:**
+```css
+.bd-hero__title { margin: 0; } /* stijl de component-selector direct */
+```
 
-### [ERR-012] Metafield toont lege string ipv niet renderen
-- **Component:** PDP
-- **Symptoom:** Lege div zichtbaar in layout, witruimte onverwacht
-- **Oorzaak:** Metafield gerenderd zonder `{% if ... != blank %}` check
-- **Oplossing:** Altijd conditie wrappen rondom metafield output
+---
+
+### ❌ Verkeerde breakpoints
+
+**Fout:** `768px`, `1024px`, `1280px` (Bootstrap / eigen systeem)
+
+**Correct (Dawn standaard):**
+- `750px` — tablet
+- `990px` — desktop
+- `1200px` — wide
+
+---
+
+### ❌ Desktop padding vergeten
+
+**Fout:** Sectiepadding alleen voor mobiel ingesteld.
+
+**Correct:**
+```css
+.bd-sectie { padding-block: var(--bd-section-padding-mobile, 6rem); }
+
+@media screen and (min-width: 990px) {
+  .bd-sectie { padding-block: var(--bd-section-padding-desktop, 10rem); }
+}
+```
+
+---
+
+## Liquid
+
+### ❌ `product.variants.first` gebruiken
+
+**Fout:**
 ```liquid
-{% if product.metafields.custom.field != blank %}
-  <div>{{ product.metafields.custom.field }}</div>
-{% endif %}
+{{ product.variants.first.price | money }}
 ```
 
-### [ERR-013] Prijs toont niet correct bij sale
-- **Component:** PDP
-- **Symptoom:** Geen doorgestreepte originele prijs bij korting
-- **Oorzaak:** Alleen `price` getoond, `compare_at_price` vergeten
-- **Oplossing:**
+**Correct:**
 ```liquid
-{% if variant.compare_at_price > variant.price %}
-  <s>{{ variant.compare_at_price | money }}</s>
-{% endif %}
-<span>{{ variant.price | money }}</span>
+{{ product.selected_or_first_available_variant.price | money }}
+```
+
+**Waarom:** `variants.first` negeert de URL-parameter voor de geselecteerde variant.
+
+---
+
+### ❌ Ontbrekende blank-check
+
+**Fout:**
+```liquid
+<h2>{{ section.settings.heading }}</h2>
+```
+
+**Correct:**
+```liquid
+{%- unless section.settings.heading == blank -%}
+  <h2>{{ section.settings.heading | escape }}</h2>
+{%- endunless -%}
 ```
 
 ---
 
-## Collection Page
+### ❌ Output zonder escape
 
-### [ERR-020] Paginate block niet gesloten
-- **Component:** Collection
-- **Symptoom:** Liquid render error, pagina toont niet
-- **Oorzaak:** `{% paginate %}` zonder `{% endpaginate %}`
-- **Oplossing:** Altijd `{% endpaginate %}` na de product loop
-
-### [ERR-021] Lege collectie toont geen bericht
-- **Component:** Collection
-- **Symptoom:** Lege pagina bij collectie zonder producten
-- **Oorzaak:** Geen `{% if collection.products.size == 0 %}` check
-- **Oplossing:**
+**Fout:**
 ```liquid
-{% if collection.products.size == 0 %}
-  <p>{{ 'collections.general.no_matches' | t }}</p>
-{% endif %}
+{{ product.title }}
+{{ section.settings.heading }}
+```
+
+**Correct:**
+```liquid
+{{ product.title | escape }}
+{{ section.settings.heading | escape }}
+```
+
+**Uitzondering:** `richtext_field` en `html`-type settings — die mogen zonder escape.
+
+---
+
+### ❌ Hardcoded tekst in Liquid
+
+**Fout:**
+```liquid
+<button>Add to cart</button>
+```
+
+**Correct:**
+```liquid
+<button>{{ 'products.product.add_to_cart' | t }}</button>
 ```
 
 ---
 
-## Cart / Cart Drawer
+### ❌ `<script>` block inline in Liquid sectie
 
-### [ERR-030] Cart count badge update niet realtime
-- **Component:** Cart
-- **Symptoom:** Badge toont oud aantal na add-to-cart
-- **Oorzaak:** Badge niet gelinkt aan Dawn's cart update event
-- **Oplossing:** Luister naar `cart:updated` event van Dawn
-```javascript
-document.addEventListener('cart:updated', (event) => {
-  document.querySelector('.cart-count').textContent = event.detail.cart.item_count;
-});
+**Fout:**
+```liquid
+<script>
+  document.querySelector('.bd-hero').addEventListener(...)
+</script>
+{% schema %}...{% endschema %}
 ```
 
-### [ERR-031] Hardcoded /cart URL
-- **Component:** Cart
-- **Symptoom:** Verkeerde redirect in andere taalversies of markets
-- **Oorzaak:** `/cart` hardcoded in href of action
-- **Oplossing:** Altijd `{{ routes.cart_url }}` gebruiken
-
----
-
-## Homepage
-
-### [ERR-040] Hero afbeelding te groot op mobiel
-- **Component:** Homepage
-- **Symptoom:** Trage laadtijd op mobiel, CLS (layout shift)
-- **Oorzaak:** Geen aparte mobile image of verkeerde `sizes` parameter
-- **Oplossing:** Altijd een `mobile_image` schema setting toevoegen
+**Correct:** Altijd extern bestand:
 ```liquid
-{% assign hero_image = section.settings.mobile_image %}
-{% if hero_image == blank %}
-  {% assign hero_image = section.settings.image %}
-{% endif %}
+<script src="{{ 'bd-hero.js' | asset_url }}" defer="defer"></script>
+{% schema %}...{% endschema %}
 ```
 
 ---
 
 ## JavaScript
 
-### [ERR-050] jQuery gebruikt
-- **Component:** Algemeen
-- **Symptoom:** JS werkt niet, console error "$ is not defined"
-- **Oorzaak:** jQuery beschikbaar op sommige themes maar niet standaard in Dawn
-- **Oplossing:** Altijd vanilla JS. `document.querySelector` ipv `$(...)`
+### ❌ Geen guard voor ontbrekend element
 
-### [ERR-051] console.log in productie
-- **Component:** Algemeen
-- **Symptoom:** Console vervuild, potentieel sensitive data zichtbaar
-- **Oorzaak:** Debug code niet verwijderd
-- **Oplossing:** Nooit `console.log` in geleverde code. Gebruik conditionele debug:
+**Fout:**
 ```javascript
-const DEBUG = false;
-if (DEBUG) console.log('...');
+const section = document.querySelector('.bd-hero');
+section.addEventListener(...); // crasht als niet op pagina
+```
+
+**Correct:**
+```javascript
+const section = document.querySelector('[data-section-type="bd-hero"]');
+if (!section) return;
 ```
 
 ---
 
-_Nieuwe fouten worden toegevoegd door de Runway Prompt Engine na elke CP3/CP4 rapportagecyclus._
+### ❌ Geen theme editor support
+
+**Fout:** JS initialiseert alleen bij `DOMContentLoaded` — werkt niet na sectie-reload in customizer.
+
+**Correct:**
+```javascript
+function init() { /* ... */ }
+
+document.addEventListener('shopify:section:load', function(event) {
+  if (!event.target.querySelector('[data-section-type="bd-hero"]')) return;
+  init();
+});
+
+init(); // eerste keer bij laden
+```
+
+---
+
+### ❌ CSS-klassen als JS hooks
+
+**Fout:**
+```javascript
+const trigger = section.querySelector('.bd-hero__button');
+```
+
+**Correct:**
+```javascript
+const trigger = section.querySelector('[data-bd-trigger]');
+```
+
+**Waarom:** CSS-klassen zijn voor styling, data-attributen voor JS-gedrag. Scheiding voorkomt breuk bij CSS-refactors.
+
+---
+
+## Metafields
+
+### ❌ Verkeerde namespace
+
+**Fout:** `custom`, `theme`, `store`
+
+**Correct:** Altijd `bd`
+
+---
+
+### ❌ Metafields aanmaken ná coding
+
+**Fout:** Component gebouwd zonder metafield-definitie → foutmeldingen in productpagina.
+
+**Correct:** Metafields aanmaken in Shopify Admin **vóór** de eerste regel Liquid-code.
+
+---
+
+### ❌ Metafield zonder blank-check in Liquid
+
+**Fout:**
+```liquid
+<p>{{ product.metafields.bd.subtitle_example.value }}</p>
+```
+
+**Correct:**
+```liquid
+{%- assign subtitle = product.metafields.bd.subtitle_example.value -%}
+{%- unless subtitle == blank -%}
+  <p>{{ subtitle | escape }}</p>
+{%- endunless -%}
+```
+
+---
+
+## Veiligheid & Workflow
+
+### ❌ Werken in het live/gepubliceerde theme
+
+**Nooit.** Altijd dev theme gebruiken: `[BD/ Dev- DO NOT PUBLISH ]`
+
+---
+
+### ❌ Credentials committen
+
+Figma API token, Shopify access token of andere credentials horen nooit in een commit.
+Gebruik `.mcp.json` (lokaal, in `.gitignore`) — nooit `.mcp.json.template` vullen met echte waarden.
+
+---

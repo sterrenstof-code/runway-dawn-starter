@@ -1,0 +1,255 @@
+{% comment %}
+  Section: bd-example
+  Beschrijving: Referentiesectie die alle BD-patronen demonstreert.
+  Gebruik dit als startpunt voor nieuwe secties.
+
+  Metafields:
+    - bd.subtitle_example (single_line_text_field) — Optionele ondertitel
+    - bd.media_example (file_reference) — Optionele afbeelding
+
+  Aanmaken via shopify-mcp vóór eerste gebruik.
+{% endcomment %}
+
+{%- liquid
+  assign heading    = section.settings.heading
+  assign subheading = section.settings.subheading
+  assign cta_label  = section.settings.cta_label
+  assign cta_url    = section.settings.cta_url
+
+  comment
+    Metafield: ondertitel (product-level, optioneel)
+    Gebruik: voeg toe als product-context aanwezig is,
+    anders verwijder de metafield-assign hieronder.
+  endcomment
+  assign meta_subtitle = nil
+  comment
+    Voorbeeld — uncomment wanneer metafield aangemaakt is:
+    assign meta_subtitle = product.metafields.bd.subtitle_example.value
+  endcomment
+
+  comment
+    Metafield: afbeelding (product-level, optioneel)
+  endcomment
+  assign meta_media = nil
+  comment
+    Voorbeeld — uncomment wanneer metafield aangemaakt is:
+    assign meta_media = product.metafields.bd.media_example.value
+  endcomment
+
+  comment
+    Kies afbeelding: metafield heeft voorrang over sectie-instelling
+  endcomment
+  assign image = meta_media | default: section.settings.image
+-%}
+
+{{- 'bd-example.css' | asset_url | stylesheet_tag -}}
+
+{%- comment -%} [BD feat] BD-Example sectie {%- endcomment -%}
+<section
+  id="bd-example-{{ section.id }}"
+  class="bd-example {{ section.settings.padding_style }} color-{{ section.settings.color_scheme }} gradient"
+  aria-labelledby="bd-example-heading-{{ section.id }}"
+  data-section-type="bd-example"
+>
+  <div class="bd-example__container page-width">
+
+    {%- comment -%} --- HEADER --- {%- endcomment -%}
+    <header class="bd-example__header">
+
+      {%- unless heading == blank -%}
+        <h2
+          id="bd-example-heading-{{ section.id }}"
+          class="bd-example__heading {{ section.settings.heading_size }}"
+        >
+          {{- heading | escape -}}
+        </h2>
+      {%- endunless -%}
+
+      {%- unless subheading == blank -%}
+        <p class="bd-example__subheading bd-p-lg">
+          {{- subheading | escape -}}
+        </p>
+      {%- endunless -%}
+
+      {%- unless meta_subtitle == blank -%}
+        <p class="bd-example__meta-subtitle bd-p-sm">
+          {{- meta_subtitle | escape -}}
+        </p>
+      {%- endunless -%}
+
+    </header>
+    {%- comment -%} --- /HEADER --- {%- endcomment -%}
+
+
+    {%- comment -%} --- MEDIA --- {%- endcomment -%}
+    {%- if image != blank -%}
+      <div class="bd-example__media">
+
+        {%- comment -%}
+          LCP afbeelding (above the fold): gebruik eager + fetchpriority high.
+          Alle andere afbeeldingen: lazy (standaard hieronder).
+        {%- endcomment -%}
+        {{- image | image_url: width: 1500 | image_tag:
+            loading: 'lazy',
+            widths: '375, 750, 990, 1200, 1500',
+            sizes: '(min-width: 990px) 50vw, 100vw',
+            width: image.width,
+            height: image.height,
+            alt: image.alt | escape,
+            class: 'bd-example__image'
+        -}}
+
+      </div>
+    {%- endif -%}
+    {%- comment -%} --- /MEDIA --- {%- endcomment -%}
+
+
+    {%- comment -%} --- BLOKKEN --- {%- endcomment -%}
+    {%- if section.blocks.size > 0 -%}
+      <ul class="bd-example__items" role="list">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+
+            {%- when 'item' -%}
+              <li
+                class="bd-example__item"
+                data-bd-item
+                {{ block.shopify_attributes }}
+              >
+                {%- unless block.settings.title == blank -%}
+                  <h3 class="bd-example__item-title bd-h4">
+                    {{- block.settings.title | escape -}}
+                  </h3>
+                {%- endunless -%}
+
+                {%- unless block.settings.text == blank -%}
+                  <div class="bd-example__item-text rte bd-p-base">
+                    {{- block.settings.text -}}
+                  </div>
+                {%- endunless -%}
+              </li>
+
+          {%- endcase -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    {%- comment -%} --- /BLOKKEN --- {%- endcomment -%}
+
+
+    {%- comment -%} --- CTA --- {%- endcomment -%}
+    {%- unless cta_label == blank or cta_url == blank -%}
+      <div class="bd-example__cta">
+        <a
+          href="{{ cta_url }}"
+          class="bd-example__cta-link bd-button bd-button--primary"
+          data-bd-cta
+        >
+          {{- cta_label | escape -}}
+        </a>
+      </div>
+    {%- endunless -%}
+    {%- comment -%} --- /CTA --- {%- endcomment -%}
+
+  </div>
+</section>
+{%- comment -%} [BD feat] BD-Example sectie {%- endcomment -%}
+
+<script src="{{ 'bd-example.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "BD — Example",
+  "tag": "section",
+  "class": "bd-example",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titel",
+      "default": "Sectietitel"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Titel grootte",
+      "options": [
+        { "value": "bd-h2", "label": "H2 (standaard)" },
+        { "value": "bd-h1", "label": "H1 (groot)" },
+        { "value": "bd-h3", "label": "H3 (klein)" }
+      ],
+      "default": "bd-h2"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Ondertitel",
+      "default": "Optionele ondertitel voor deze sectie."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Afbeelding"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Knoptekst",
+      "default": "Meer bekijken"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Knop URL"
+    },
+    {
+      "type": "select",
+      "id": "padding_style",
+      "label": "Sectie padding",
+      "options": [
+        { "value": "bd-padding", "label": "Custom (uit design)" },
+        { "value": "bd-padding--standard", "label": "Standaard (6rem / 10rem)" }
+      ],
+      "default": "bd-padding--standard"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Kleurenschema",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titel",
+          "default": "Itemtitel"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Tekst",
+          "default": "<p>Omschrijving van dit item.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "BD — Example",
+      "blocks": [
+        { "type": "item" },
+        { "type": "item" },
+        { "type": "item" }
+      ]
+    }
+  ]
+}
+{% endschema %}
